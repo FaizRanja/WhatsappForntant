@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import './page-auth.css';
-import { AuthWrapper } from "./AuthWrapper";
 import axios from "axios";
+import { AuthWrapper } from "./AuthWrapper";
+import './page-auth.css';
 
 import Cookies from 'js-cookie';
 

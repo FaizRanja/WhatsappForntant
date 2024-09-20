@@ -11,24 +11,53 @@ const ApiErrorHandler = require('../utils/ApiResponseHandler');
 
 // Get all user accounts when the QR code is scanned
 exports.getAllData = AsynicHandler(async (req, res) => {
-    try {
-      // Initialize API feature with filtering and search functionality
-      const apiFeature = new apifeatucher(QRScan.find(), req.query)
-        .Search()
-        .filter();
   
-      // Sort the data by the 'createdAt' field in descending order (latest first)
-      const scans = await apiFeature.query.sort({ createdAt: -1 });
-  
-      // Send the response with the retrieved data
-      res.status(200).json({
-        success: true,
-        scans,
-      });
-    } catch (error) {
-      console.error('Error retrieving QR scans:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+  const token = req.headers['authorization']?.split(' ')[1];
+  const secretKey = req.headers['x-secret-key']; // Correctly get secret key from the header
+
+  try {
+    if (!token || !secretKey) {
+      return next(new ApiErrorHandler(401, 'Authorization credentials missing'));
     }
+    // Validate token and secret key
+    const user = await User.findOne({ secretKey });
+    if (!user) {
+      return next(new ApiErrorHandler(404, 'User not found'));
+    }
+
+    const isSecretKeyValid = await user.validateSecretKey(secretKey);
+    if (!isSecretKeyValid) {
+      return next(new ApiErrorHandler(401, 'Invalid secret key'));
+    }
+
+    // Build the query object based on the provided filters
+    const { keyword, date } = req.query;
+    const query = {};
+    if (keyword) {
+      query.$or = [
+        { senderNumber: { $regex: keyword, $options: 'i' } },
+        { recipientNumber: { $regex: keyword, $options: 'i' } },
+        { messageContent: { $regex: keyword, $options: 'i' } }
+      ];
+    }
+
+    if (date) {
+      const parsedDate = new Date(date);
+      if (!isNaN(parsedDate.getTime())) {
+        query.timestamp = { $gte: parsedDate };
+      } else {
+        return next(new ApiErrorHandler(400, 'Invalid date format'));
+      }
+    }
+
+    const scans = await QRScan.find(query).sort({ timestamp: -1 });
+    res.json({ success: true, scans });
+  } catch (error) {
+    console.error('Error retrieving messages:', error);
+    return next(new ApiErrorHandler(500, 'Internal server error'));
+  }
+
+
   });
 // Refresh All Data
   exports.Refreshdata=AsynicHandler(async(req,res,next)=>{
@@ -301,9 +330,18 @@ exports.sectionLogout=AsynicHandler(async (req,res,next)=>{
   }
 })
 // Function for qr scan Data Gelete 
-exports.DeleteQrScan=AsynicHandler(async(req,res,next)=>{
-  const { id } = req.params;
+exports.DeleteQrScan = AsynicHandler(async (req, res, next) => {
+  const { id } = req.params; // Removed secretKey from params
+  const { secretKey } = req.query; // Get secretKey from query parameters
   try {
+    const user = await User.findOne({ secretKey });
+    if (!user) {
+      return next(new ApiErrorHandler(400, "User not found"));
+    }
+    const isSecretKeyValid = user.validateSecretKey(secretKey);
+    if (!isSecretKeyValid) {
+      return next(new ApiErrorHandler(401, "Your secret key does not match"));
+    }
     const result = await QRScan.findByIdAndDelete(id);
     if (!result) {
       return res.status(404).json({ error: 'QR scan not found' });
@@ -313,18 +351,28 @@ exports.DeleteQrScan=AsynicHandler(async(req,res,next)=>{
     console.error('Error deleting QR scan:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
-})
+});
+
 // Function For Delete send message
 exports.DeleteSentMessage=AsynicHandler(async(req,res,next)=>{
-  const { id } = req.params;
+  const { id } = req.params; // Removed secretKey from params
+  const { secretKey } = req.query; // Get secretKey from query parameters
   try {
+    const user = await User.findOne({ secretKey });
+    if (!user) {
+      return next(new ApiErrorHandler(400, "User not found"));
+    }
+    const isSecretKeyValid = user.validateSecretKey(secretKey);
+    if (!isSecretKeyValid) {
+      return next(new ApiErrorHandler(401, "Your secret key does not match"));
+    }
     const result = await Message.findByIdAndDelete(id);
     if (!result) {
-      return res.status(404).json({ error: 'Send Message not found' });
+      return res.status(404).json({ error: 'QR scan not found' });
     }
     res.status(200).json({ message: 'Sent Message deleted successfully' });
   } catch (error) {
-    console.error('Error deleting QR scan:', error);
+    console.error('Error Deleomg Sent Message:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 })

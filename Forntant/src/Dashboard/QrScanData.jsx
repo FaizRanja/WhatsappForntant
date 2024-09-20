@@ -1,4 +1,9 @@
-import React from 'react';
+import DeleteIcon from '@mui/icons-material/Delete';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
+import LinkIcon from '@mui/icons-material/Link';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import RssFeedIcon from '@mui/icons-material/RssFeed';
+import WifiOffIcon from '@mui/icons-material/WifiOff';
 import {
   Box,
   IconButton,
@@ -13,13 +18,8 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import DeleteIcon from '@mui/icons-material/Delete';
-import FileCopyIcon from '@mui/icons-material/FileCopy';
-import LinkIcon from '@mui/icons-material/Link';
-import MailOutlineIcon from '@mui/icons-material/MailOutline';
-import RssFeedIcon from '@mui/icons-material/RssFeed';
-import WifiOffIcon from '@mui/icons-material/WifiOff';
 
 const columns = [
   { id: 'scannedAt', label: 'SCANNED AT', minWidth: 170 },
@@ -43,11 +43,9 @@ export default function QrscanData({ qrScans, onLinkClick, onCopy, onDelete }) {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
-
   const handleOpenSendMessage = (scan) => {
     navigate('/user/sendmessage', { state: { whatsappId: scan.whatsappId } });
   };
-
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
       <TableContainer sx={{ maxHeight: 440 }}>

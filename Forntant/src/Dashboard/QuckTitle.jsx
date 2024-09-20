@@ -1,19 +1,28 @@
-import React, { useState, useEffect } from 'react';
 import {
-    Box, TextField, Paper, Stack, IconButton,
-    Typography, Button, Modal, CircularProgress, Backdrop, InputAdornment,
-    Alert, MenuItem
-} from '@mui/material';
-import {
-    Send as SendIcon, Add as AddIcon,
-    VideoLibrary as VideoLibraryIcon, Image as ImageIcon,
-    AudioFile as AudioFileIcon, Description as DescriptionIcon,
-    AccountCircle as AccountCircleIcon, Phone as PhoneIcon,
-    Comment as CommentIcon
+    AccountCircle as AccountCircleIcon,
+    Add as AddIcon,
+    Comment as CommentIcon,
+    Phone as PhoneIcon,
+    Send as SendIcon
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import {
+    Alert,
+    Backdrop,
+    Box,
+    Button,
+    CircularProgress,
+    InputAdornment,
+    MenuItem,
+    Modal,
+    Paper, Stack,
+    TextField,
+    Typography
+} from '@mui/material';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getUserSecretKey } from '../pages/account/SecretApiKey/Secrectkey';
 
 export default function QuickTitle() {
     const [showModal, setShowModal] = useState(false);
@@ -76,29 +85,7 @@ export default function QuickTitle() {
                     // Upload file to Cloudinary and get the URL
                     fileUrl = await uploadFileToCloudinary(selectedFile);
                 }
-
-                const token = Cookies.get('token'); // Retrieve token from cookies
-                console.log('Token from cookies:', token);
-                if (!token) {
-                  throw new Error('No token found. Please log in again.');
-                }
-          
-                const config = {
-                  headers: { 'Authorization': `Bearer ${token}` },
-                  withCredentials: true, // Ensures cookies are sent with the request
-                };
-          
-                // Fetch the user data from the backend
-                const userResponse = await axios.get('http://localhost:4000/api/v1/user/Getallregisteruser', config);
-                const { secretKey } = userResponse.data.user;
-                if (!secretKey) {
-                  throw new Error('No secret key found for the user.');
-                }
-          
-                console.log(secretKey);
-
-
-
+                const secretKey = await getUserSecretKey()
                 // Sending data with POST request
                 const response = await axios.post('http://localhost:4000/api/v1/qr-scans/user/sendmessage', {
                     phoneNumber,

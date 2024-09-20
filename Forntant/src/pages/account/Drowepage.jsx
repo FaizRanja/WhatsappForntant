@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import swal from 'sweetalert';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Paper } from '@mui/material';
-import QRCode from 'react-qr-code';
-import { Vortex } from 'react-loader-spinner';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import axios from 'axios';
-import Cookies from 'js-cookie';
+import React, { useEffect, useState } from 'react';
+import { Vortex } from 'react-loader-spinner';
+import QRCode from 'react-qr-code';
+import swal from 'sweetalert';
+import { getUserSecretKey } from './SecretApiKey/Secrectkey';
 
 const Drowepage = () => {
   const [qrCode, setQrCode] = useState('');
@@ -44,26 +44,7 @@ const Drowepage = () => {
     const randomId = Math.random().toString(36).substr(2, 9);
 
     try {
-      const token = Cookies.get('token'); // Retrieve token from cookies
-      console.log('Token from cookies:', token);
-      if (!token) {
-        throw new Error('No token found. Please log in again.');
-      }
-
-      const config = {
-        headers: { 'Authorization': `Bearer ${token}` },
-        withCredentials: true, // Ensures cookies are sent with the request
-      };
-
-      // Fetch the user data from the backend
-      const userResponse = await axios.get('http://localhost:4000/api/v1/user/Getallregisteruser', config);
-      const { secretKey } = userResponse.data.user;
-      if (!secretKey) {
-        throw new Error('No secret key found for the user.');
-      }
-
-      console.log(secretKey);
-
+     const secretKey =await getUserSecretKey()
       // Make the request to create a WhatsApp session and get the QR code
       const postResponse = await axios.post('http://localhost:4000/api/v1/qr-scans/user/createsection', { 
         id: randomId, 

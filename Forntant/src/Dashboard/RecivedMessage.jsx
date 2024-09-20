@@ -1,16 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import {
-  Backdrop, CircularProgress, Paper, Table, TableBody,
+  Alert,
+  Backdrop,
+  Box,
+  Button,
+  CircularProgress,
+  Dialog, DialogActions, DialogContent, DialogTitle,
+  IconButton,
+  Paper,
+  Snackbar,
+  Stack,
+  Table, TableBody,
   TableCell, TableContainer, TableHead, TablePagination, TableRow,
-  Dialog, DialogActions, DialogContent, DialogTitle, Button, Typography, Stack,
-  Box, IconButton, Snackbar, Alert,
+  Typography,
 } from '@mui/material';
-import SearchSms from './SearchSms';
-import AlertRecivedMessage from './Alerts/AlertRecivedMessage';
+import axios from 'axios';
 import Cookies from 'js-cookie';
+import React, { useEffect, useState } from 'react';
+import SearchSms from './SearchSms';
+import { getUserSecretKey } from '../pages/account/SecretApiKey/Secrectkey';
 
 const columns = [
   { id: 'timestamp', label: 'CREATED', minWidth: 150 },
@@ -42,21 +51,7 @@ export default function ShowSendData() {
     setLoading(true);
     try {
       const token = Cookies.get('token');
-      console.log(token)
-      if (!token) {
-        throw new Error('No token found. Please log in again.');
-      }
-  
-      const userResponse = await axios.get('http://localhost:4000/api/v1/user/Getallregisteruser', {
-        headers: { 'Authorization': `Bearer ${token}` },
-        withCredentials: true,
-      });
-      const { secretKey } = userResponse.data.user;
-      console.log(secretKey)
-      if (!secretKey) {
-        throw new Error('No secret key found for the user.');
-      }
-  
+const secretKey =await getUserSecretKey()
       // Pass the secretKey in headers or body based on backend expectation
       const response = await axios.get('http://localhost:4000/api/v1/qr-scans/user/recived', {
         params,
@@ -65,7 +60,6 @@ export default function ShowSendData() {
           'X-Secret-Key': secretKey // Adjust header name if necessary
         }
       });
-  
       if (response.data && Array.isArray(response.data.scans)) {
         setShowMessage(response.data.scans);
       } else {

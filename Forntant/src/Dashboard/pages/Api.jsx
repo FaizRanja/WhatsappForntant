@@ -1,31 +1,27 @@
 // App.js
-import React, { useState } from "react";
 import {
   Box,
   List,
   ListItem,
   ListItemText,
-  Typography,
   Paper,
-  Button,
-  Stack,
-  TextField,
-  IconButton,
+  Typography
 } from "@mui/material";
-import SendIcon from "@mui/icons-material/Send";
+import React, { useState } from "react";
+// import SendIcon from "@mui/icons-material/Send";
+import DeleteWhatsappsent from "./ApiDocumation/DeleteWhatsappsent";
+import GetWhatsappChat from "./ApiDocumation/GetWhatsappChat";
 import LinkWhatsapp from "./ApiDocumation/LinkWhatsapp";
 import RelinkWhatsapp from "./ApiDocumation/RelinkWhatsapp";
-import GetWhatsappChat from "./ApiDocumation/GetWhatsappChat";
-import DeleteWhatsappsent from "./ApiDocumation/DeleteWhatsappsent";
-import DeleteSentChat from "./ApiDocumation/DeleteSentChat";
+// import DeleteSentChat from "./ApiDocumation/DeleteSentChat";
+import DeleteRecivedmsg from "./ApiDocumation/DeleteRecivedmsg";
+import Deletesentmsg from "./ApiDocumation/Deletesentmsg";
 import DeleteWhastappRecivedChat from "./ApiDocumation/DeleteWhastappRecivedChat";
-import WhatsappBulkmess from "./ApiDocumation/WhatsappBulkmess";
-import Whatsappsinglemeg from "./ApiDocumation/Whatsappsinglemeg";
-import WhatsappRecivedmsg from "./ApiDocumation/WhatsappRecivedmsg";
 import GetSentMessage from "./ApiDocumation/GetSentMessage";
 import Pendingwhatmsg from "./ApiDocumation/Pendingwhatmsg";
-import Deletesentmsg from "./ApiDocumation/Deletesentmsg";
-import DeleteRecivedmsg from "./ApiDocumation/DeleteRecivedmsg";
+import WhatsappBulkmess from "./ApiDocumation/WhatsappBulkmess";
+import WhatsappRecivedmsg from "./ApiDocumation/WhatsappRecivedmsg";
+import Whatsappsinglemeg from "./ApiDocumation/Whatsappsinglemeg";
 
 
 const menuItems = [
@@ -50,13 +46,13 @@ const menuItems = [
     url: "http://localhost:4000/api/v1/qr-scans/user/sendmessage",
     sectionId: "api-whatsapp_sent_single_Message",
   },
-  {
-    title: "Delete Sent Chat",
-    method: "DELETE",
-    description: "WhatsApp - Delete Sent Chat",
-    url: "http://localhost:4000/api/v1/qr-scans/user/delete/sentmessage",
-    sectionId: "api-whatsapp_delete_sent__Chat",
-  },
+  // {
+  //   title: "Delete Sent Chat",
+  //   method: "DELETE",
+  //   description: "WhatsApp - Delete Sent Chat",
+  //   url: "http://localhost:4000/api/v1/qr-scans/user/delete/sentmessage",
+  //   sectionId: "api-whatsapp_delete_sent__Chat",
+  // },
   {
     title: "Delete Received Chat",
     method: "GET",
@@ -193,11 +189,7 @@ function Api() {
 
       // case for delete sent message
 
-      case "api-whatsapp_delete_sent__Chat":
-        return (
-        <DeleteSentChat/>
-        );
-
+  
       // CAse for delete whatsapp account
       case "api-whatsapp_delete_sent__Chat":
         return (

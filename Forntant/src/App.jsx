@@ -1,5 +1,5 @@
 // App.js
-
+import React from "react";
 import { useLocation } from "react-router-dom";
 import Layout from "./layouts/Layout";
 import AppRoutes from "./router/AppRoutes";

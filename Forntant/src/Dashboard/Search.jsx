@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { TextField, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import { IconButton, TextField } from '@mui/material';
+import React, { useState } from 'react';
 
 function Search({onSearch}) {
 

@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import io from 'socket.io-client';
-import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
+import Snackbar from '@mui/material/Snackbar';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { styled } from '@mui/system';
+import React, { useState } from 'react';
 
 // Establish socket connection
 ; // Adjust the port if necessary

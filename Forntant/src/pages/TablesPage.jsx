@@ -1,28 +1,27 @@
-import React, { useEffect, useState } from "react";
+import SyncProblemIcon from "@mui/icons-material/SyncProblem";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import {
   Backdrop,
   Button,
   CircularProgress,
-  Paper,
-  Snackbar,
-  Stack,
-  Tooltip,
-  Typography,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Alert
+  Paper,
+  Stack,
+  Tooltip,
+  Typography
 } from "@mui/material";
 import axios from "axios";
-import SyncProblemIcon from "@mui/icons-material/SyncProblem";
-import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import Cookies from 'js-cookie';
+import React, { useEffect, useState } from "react";
+import QrScanAlert from "../Dashboard/Alerts/QrScanAlert";
 import QrscanData from "../Dashboard/QrScanData";
+import Search from "../Dashboard/Search";
 import Drowepage from "./account/Drowepage";
 import Drowerforlink from "./account/Drowerforrelink";
-import Search from "../Dashboard/Search";
-import QrScanAlert from "../Dashboard/Alerts/QrScanAlert";
-import Cookies from 'js-cookie';
+import { getUserSecretKey } from "./account/SecretApiKey/Secrectkey";
 
 const TablesPage = ({ sectionId }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -43,23 +42,8 @@ const TablesPage = ({ sectionId }) => {
 
   useEffect(() => {
     const fetchQrScans = async (params = {}) => {
-
       const token = Cookies.get('token');
-      console.log(token)
-      if (!token) {
-        throw new Error('No token found. Please log in again.');
-      }
-  
-      const userResponse = await axios.get('http://localhost:4000/api/v1/user/Getallregisteruser', {
-        headers: { 'Authorization': `Bearer ${token}` },
-        withCredentials: true,
-      });
-      const { secretKey } = userResponse.data.user;
-      console.log(secretKey)
-      if (!secretKey) {
-        throw new Error('No secret key found for the user.');
-      }
-
+   const secretKey =await getUserSecretKey()
       try {
         const response = await axios.get('http://localhost:4000/api/v1/qr-scans/user', {
           params,
@@ -107,20 +91,16 @@ const TablesPage = ({ sectionId }) => {
   // Handle For Delete Qr Scan Whatsapp 
   const handleConfirmDelete = async () => {
     try {
-      if (!scanToDelete) {
-        console.error("Invalid scan ID");
-        return;
-      }
-
+      const secretKey = await  getUserSecretKey()
       const response = await axios.delete(
-        `http://localhost:4000/api/v1/qr-scans/${scanToDelete}`
-      );
-
+        `http://localhost:4000/api/v1/qr-scans/${scanToDelete}`, // Only ID in the URL
+        { params: { secretKey } } // Send secretKey as a query parameter
+      )
       if (response.status === 200) {
         setQrScans((prevQrScans) =>
           prevQrScans.filter((scan) => scan._id !== scanToDelete)
         );
-        setSnackbarMessage("QR scan User deleted successfully.");
+        setSnackbarMessage("QR scan deleted successfully.");
         setSnackbarSeverity("success");
       } else {
         setSnackbarMessage("Failed to delete QR scan.");
@@ -131,10 +111,11 @@ const TablesPage = ({ sectionId }) => {
       setSnackbarMessage("Error deleting QR scan.");
       setSnackbarSeverity("error");
     }
-
+  
     setSnackbarOpen(true);
     closeConfirmDialog();
   };
+  
 
   const handleAddCopyUniqueid = (whatsappId) => {
     navigator.clipboard

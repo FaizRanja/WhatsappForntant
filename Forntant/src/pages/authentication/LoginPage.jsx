@@ -1,9 +1,8 @@
+import axios from "axios";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import Cookies from 'js-cookie'; // Import js-cookie
-import './page-auth.css';
 import { AuthWrapper } from "./AuthWrapper";
+import './page-auth.css';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState("");

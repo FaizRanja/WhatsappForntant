@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link } from "react-router-dom"
-import './page-auth.css'
+import { Link } from "react-router-dom";
 import { AuthWrapper } from "./AuthWrapper";
+import './page-auth.css';
 
 export const ForgotPasswordPage = () => {
     const [email, setEmail] = useState('');
