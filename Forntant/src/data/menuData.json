@@ -1,0 +1,138 @@
+[
+    {
+        "header": "",
+        "items": [
+            {
+                "text": "Dashboard",
+                "icon": "bx bx-home",
+                "available": true,
+                "link": "/"
+            }
+         
+          
+        ]
+    },
+    {
+        "header": "SMS",
+        "items": [
+
+            {
+                "text": "SMS ",
+                "icon": "bx bx-dock-top",
+                "available": true,
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "QUEUE",
+                        "available": true,
+                        "link": "/user/sendmessage"
+                    },
+                    {
+                        "text": "SENT",
+                        "available": true,
+                        "link": "/whatsapp/sent"
+                    },
+                    {
+                        "text": "RECEIVED",
+                        "available": true,
+                        "link": "/account/connections"
+                    }
+                ]
+            }
+          
+          
+        ]
+    },
+    {
+        "header": "WHATSAPP",
+        "items": [
+
+            {
+                "text": " WHATSAPP",
+                "icon": "bx bx-dock-top",
+                "available": true,
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "QUEUE",
+                        "available": true,
+                        "link": "/user/sendmessage"
+                    },
+                    {
+                        "text": "SENT",
+                        "available": true,
+                        "link": "/whatsapp/sent"
+                    },
+                    {
+                        "text": "RECEIVED",
+                        "available": true,
+                        "link": "/whatsapp/received"
+                    },
+                    {
+                        "text": "GROUPS",
+                        "available": true,
+                        "link": "/account/connections"
+                    }
+                ]
+            }
+          
+          
+        ]
+    },
+    {
+        "header": "HOSTS",
+        "items": [
+           
+        
+            {
+                "text": " WHATSAPP",
+                "icon": "bx bx-table",
+                "available": true,
+                "link": "/tables"
+            }
+         
+        ]
+    },
+    {
+        "header": "TOOLS",
+        "items": [
+           
+        
+            {
+                "text": " API KEYS",
+                "icon": "bx bx-key ",
+                "available": true,
+                "link": "/dashboard/tools/keys"
+            }
+         
+        ]
+    },
+    {
+        "header": "Documents",
+        "items": [
+           
+        
+            {
+                "text": " API",
+                "icon": "bx bx-code",
+                "available": true,
+                "link": "/dashboard/docs"
+            }
+         
+        ]
+    },
+    {
+        "header": "Log-Out User",
+        "items": [
+           
+        
+            {
+                "text": "Logout",
+                "icon": "bx bx-power-off me-2",
+                "available": true,
+               "onClick": "handleonClick"
+            }
+        ]
+    }
+ 
+]

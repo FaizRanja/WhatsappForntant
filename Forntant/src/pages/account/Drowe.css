@@ -1,0 +1,32 @@
+/* Add this CSS to your stylesheet */
+.my-swal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Ensure it takes the full height of the viewport */
+  }
+  
+  .my-swal .swal-modal {
+    margin: auto;
+  }
+  
+  /* Drowepage.css */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  z-index: 1000; /* Ensure overlay is on top of other elements */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
