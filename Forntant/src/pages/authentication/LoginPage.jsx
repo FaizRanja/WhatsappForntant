@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthWrapper } from "./AuthWrapper";
 import './page-auth.css';
+import React  from "react";
 
 export const LoginPage = () => {
   const [email, setEmail] = useState("");

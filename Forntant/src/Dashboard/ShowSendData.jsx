@@ -95,12 +95,10 @@ export default function ShowSendData() {
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
-
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
-
   const handleConfirmDelete = async () => {
     try {
       const secretKey = await getUserSecretKey();

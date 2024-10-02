@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
 import axios from "axios";
 import { AuthWrapper } from "./AuthWrapper";
 import './page-auth.css';
-
+import React  from "react";
 import Cookies from 'js-cookie';
 
 export const RegisterPage = () => {
@@ -31,7 +30,7 @@ export const RegisterPage = () => {
         email,
         password
       },
-   {withCredentials: true}
+  
     );
       console.log(response);
 

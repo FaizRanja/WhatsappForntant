@@ -205,41 +205,80 @@ const generateCodeforRelink = AsynicHandler(async (req, res, next) => {
   }
 
   const client = new Client({
-    puppeteer: { headless: true }, 
+    puppeteer: { headless: true },
     authStrategy: new LocalAuth({ clientId: whatsappId }),
   });
 
+  let qrTimeout; // Define QR timeout variable to handle cleanup
+  let isResponseSent = false; // Flag to track whether the response has been sent
+
+  // Handle QR code generation
   client.on('qr', async (qr) => {
-    console.log('QR code generated:', qr);
-    try {
-      await QRScan.findOneAndUpdate(
-        { whatsappId },
-        { status: 'Awaiting Scan' },
-        { new: true, upsert: true }
-      );
-      res.status(200).json({ qrCode: qr });
-    } catch (error) {
-      console.error('Error saving QR scan data:', error);
-      if (!res.headersSent) res.status(500).json({ error: 'Error saving QR scan data' });
+    console.log('QR Code received:', qr);
+
+    // Check if the user session is already connected
+    const existingSession = await QRScan.findOne({ whatsappId });
+    if (existingSession && existingSession.status === 'Connected') {
+      console.log('Session already connected, QR code not required');
+      if (!isResponseSent) {
+        isResponseSent = true;
+        return res.status(200).json({ message: 'Session is already connected' });
+      }
     }
+
+    // Send QR code to the client if not connected
+    if (!isResponseSent) {
+      isResponseSent = true;
+      res.status(200).json({ message: 'QR Code generated', qrCode: qr });
+    }
+
+    // Set a 15-second timeout for QR code expiry
+    qrTimeout = setTimeout(async () => {
+      console.log('QR code expired after 15 seconds, destroying session');
+      await client.destroy();  // Close session if QR is not scanned
+      delete allSectionObject[whatsappId];  // Remove session from memory
+      await QRScan.findOneAndDelete({ whatsappId }); // Remove from DB if not connected
+      if (!isResponseSent) {
+        isResponseSent = true;
+        return res.status(200).json({ message: 'QR code expired, session destroyed' });
+      }
+    }, 15000);
   });
 
+  // Handle successful connection (QR code scanned)
   client.on('ready', async () => {
+    if (qrTimeout) {
+      clearTimeout(qrTimeout);  // Clear QR timeout since user scanned the code
+    }
     console.log('Client is ready');
+
     try {
       const phoneNumber = client.info.wid._serialized.split('@')[0];
+
+      // Update the status in the database
       await QRScan.findOneAndUpdate(
         { whatsappId },
         { status: 'Connected', phoneNumber },
         { new: true }
       );
+
+      // Store the client in memory for future use
       allSectionObject[whatsappId] = client;
+
+      if (!isResponseSent) {
+        isResponseSent = true;
+        return res.status(200).json({ message: 'WhatsApp connected successfully', phoneNumber });
+      }
     } catch (error) {
       console.error('Error updating QR scan status:', error);
-      if (!res.headersSent) res.status(500).json({ error: 'Error updating QR scan status' });
+      if (!isResponseSent) {
+        isResponseSent = true;
+        return res.status(500).json({ error: 'Error updating QR scan status' });
+      }
     }
   });
 
+  // Handle authentication failure
   client.on('auth_failure', async (message) => {
     console.error('Authentication failed:', message);
     try {
@@ -251,9 +290,13 @@ const generateCodeforRelink = AsynicHandler(async (req, res, next) => {
     } catch (error) {
       console.error('Error updating QR scan status:', error);
     }
-    if (!res.headersSent) res.status(500).json({ error: 'Authentication failed' });
+    if (!isResponseSent) {
+      isResponseSent = true;
+      return res.status(500).json({ error: 'Authentication failed' });
+    }
   });
 
+  // Handle errors
   client.on('error', async (error) => {
     console.error('WhatsApp client error:', error);
     try {
@@ -265,15 +308,24 @@ const generateCodeforRelink = AsynicHandler(async (req, res, next) => {
     } catch (error) {
       console.error('Error updating QR scan status:', error);
     }
-    if (!res.headersSent) res.status(500).json({ error: 'WhatsApp client error' });
+    if (!isResponseSent) {
+      isResponseSent = true;
+      return res.status(500).json({ error: 'WhatsApp client error' });
+    }
   });
 
+  // Initialize the client
   try {
     await client.initialize();
   } catch (error) {
     console.error('Failed to initialize WhatsApp client:', error);
-    if (!res.headersSent) res.status(500).json({ error: 'Failed to initialize WhatsApp client' });
+    if (!isResponseSent) {
+      isResponseSent = true;
+      return res.status(500).json({ error: 'Failed to initialize WhatsApp client' });
+    }
   }
 });
+
+
 
 module.exports = { createWhatsappSection, SendMessage, generateCodeforRelink };

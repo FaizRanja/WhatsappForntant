@@ -14,16 +14,14 @@ import Sendmessage from "../Dashboard/SendMessages";
 import SendMessageForUser from "../Dashboard/SendMessageForUser";
 import RecivedMessage from "../Dashboard/RecivedMessage";
 import Api from "../Dashboard/pages/Api";
+import ApiSecreact from "../Dashboard/pages/ApiSecreact";
 
 const AppRoutes = () => {
 
     const token = Getcokkies("token");
     const user = !!token;
     console.log("AppRoutes user:", user); // Debugging
-
-     
     
-  
     return (
         <>
             <Routes>
@@ -43,6 +41,7 @@ const AppRoutes = () => {
                     <Route path="/whatsapp/received" element={<RecivedMessage />} />
                     <Route path="/tables" element={<TablesPage />} />
                     <Route path="/dashboard/docs" element={<Api />} />
+                    <Route path="/dashboard/tools/keys" element={<ApiSecreact />} />
                 </Route>
             </Routes>
         </>
