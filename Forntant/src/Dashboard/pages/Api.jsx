@@ -57,7 +57,7 @@ const menuItems = [
     title: "Delete Received Chat",
     method: "GET",
     description: "Whatsapp - Delete Received Message",
-    url: "https://app.thewhatsappcity.com/api/delete/whatsapp.received",
+    url: "http://localhost:4000/api/v1/qr-scans/user/delete/recivedmessage",
     sectionId: "api-whatsapp-Delete_Received_Chat",
   },
 

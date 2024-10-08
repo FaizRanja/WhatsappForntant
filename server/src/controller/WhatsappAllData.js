@@ -8,13 +8,14 @@ const User = require('../models/User.model');
 
 const { phoneNumberToIdMap, allSectionObject } = require('./WhatsappController'); // Ensure correct import path
 const ApiErrorHandler = require('../utils/ApiResponseHandler');
+const { default: mongoose } = require('mongoose');
+
 
 // Get all user accounts when the QR code is scanned
 exports.getAllData = AsynicHandler(async (req, res) => {
   
   const token = req.headers['authorization']?.split(' ')[1];
   const secretKey = req.headers['x-secret-key']; // Correctly get secret key from the header
-
   try {
     if (!token || !secretKey) {
       return next(new ApiErrorHandler(401, 'Authorization credentials missing'));
@@ -124,48 +125,59 @@ exports.getAllData = AsynicHandler(async (req, res) => {
   });
 
   // Get all Recived MEsssage
-  exports.getRecivedmessage = AsynicHandler(async (req, res, next) => {
+  exports.getRecivedmessage =AsynicHandler(async (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
-    const secretKey = req.headers['x-secret-key']; // Correctly get secret key from the header
+    const secretKey = req.headers['x-secret-key'];
   
     try {
+      // Ensure both token and secretKey are provided
       if (!token || !secretKey) {
         return next(new ApiErrorHandler(401, 'Authorization credentials missing'));
       }
-
-      // Validate token and secret key
+  
+      // Validate the secret key by finding the user
       const user = await User.findOne({ secretKey });
       if (!user) {
         return next(new ApiErrorHandler(404, 'User not found'));
       }
   
+      // Validate the secret key (assuming this method exists on User model)
       const isSecretKeyValid = await user.validateSecretKey(secretKey);
       if (!isSecretKeyValid) {
         return next(new ApiErrorHandler(401, 'Invalid secret key'));
       }
   
-      // Build the query object based on the provided filters
-      const { keyword, date } = req.query;
-      const query = {};
-      if (keyword) {
-        query.$or = [
-          { senderNumber: { $regex: keyword, $options: 'i' } },
-          { recipientNumber: { $regex: keyword, $options: 'i' } },
-          { messageContent: { $regex: keyword, $options: 'i' } }
-        ];
-      }
+      // Define result per page and count the total documents
+      const resultPerPage = 10;
+      const currentPage = Number(req.query.page) || 1;
+      const productsCount = await Recived.countDocuments();
   
+      // Create an instance of the API feature helper for searching, filtering, and pagination
+      const apifeatuc = new apifeatucher(Recived.find(), req.query)
+        .Search()
+        .pagination(resultPerPage);
+  
+      // Optional date filter
+      const { date } = req.query;
       if (date) {
         const parsedDate = new Date(date);
-        if (!isNaN(parsedDate.getTime())) {
-          query.timestamp = { $gte: parsedDate };
-        } else {
+        if (isNaN(parsedDate.getTime())) {
           return next(new ApiErrorHandler(400, 'Invalid date format'));
         }
+        apifeatuc.query = apifeatuc.query.where('timestamp').gte(parsedDate);
       }
+      // Execute the query
+      const scans = await apifeatuc.query.sort({ timestamp: -1 });
   
-      const scans = await Recived.find(query).sort({ timestamp: -1 });
-      res.json({ success: true, scans });
+      // Send response
+      res.status(200).json({
+        success: true,
+        scans,
+        productsCount,
+        resultPerPage,
+        currentPage
+      });
+  
     } catch (error) {
       console.error('Error retrieving messages:', error);
       return next(new ApiErrorHandler(500, 'Internal server error'));
@@ -376,20 +388,47 @@ exports.DeleteSentMessage=AsynicHandler(async(req,res,next)=>{
     res.status(500).json({ error: 'Internal Server Error' });
   }
 })
+
 // Function For Delete Recived message
-exports.DeleteRecivedMessage=AsynicHandler(async(req,res,next)=>{
+exports.DeleteRecivedMessage = AsynicHandler(async (req, res, next) => {
   const { id } = req.params;
+  const { secretKey } = req.query;
+
   try {
-    const result = await Recived.findByIdAndDelete(id);
-    if (!result) {
-      return res.status(404).json({ error: 'Recived message not found' });
+    // Validate the existence of secretKey and id
+    if (!secretKey || !id) {
+      return res.status(400).json({ message: 'Secret key and message ID are required.' });
     }
-    res.status(200).json({ message: 'Recived  Message deleted successfully' });
+
+    // Find the user based on secretKey
+    const user = await User.findOne({ secretKey });
+    if (!user) {
+      return next(new ApiErrorHandler(400, 'User not found'));
+    }
+
+    // Validate the secretKey
+    const isSecretKeyValid = user.validateSecretKey(secretKey);
+    if (!isSecretKeyValid) {
+      return next(new ApiErrorHandler(401, 'Your secret key does not match'));
+    }
+
+    // Validate the format of ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid message ID format' });
+    }
+
+    // Find and delete the message
+    const deletedMessage = await Recived.findByIdAndDelete(id);
+    if (!deletedMessage) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    res.status(200).json({ message: 'Message deleted successfully' });
   } catch (error) {
-    console.error('Error deleting QR scan:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Error deleting message:', error);
+    return res.status(500).json({ message: 'Server error' });
   }
-})
+});
 
 
 

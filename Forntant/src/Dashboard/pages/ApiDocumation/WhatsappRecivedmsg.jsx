@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import SendIcon from "@mui/icons-material/Send";
 import {
@@ -8,9 +8,44 @@ import {
     TextField,
     Typography
 } from "@mui/material";
-
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
 const WhatsappRecivedmsg = () => {
+
+  const [secretKey, setsecretKey] = useState("");
+  const [success, setSuccess] = useState("");
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertSeverity, setAlertSeverity] = useState('success');
+  const [limit, setlimit] = useState("");
+  const [page, setpage] = useState("");
+  const [receivedMessages, setReceivedMessages] = useState([]); // State to store
+
+  const HadldeGetRecivedchat = async () => {
+    try {
+      const token = Cookies.get('token');
+      const response = await axios.get('http://localhost:4000/api/v1/qr-scans/user/recived', {
+        params: { page, limit }, // No need for ...params if not defined
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'X-Secret-Key': secretKey // Adjust header name if necessary
+        }
+      });
+
+      if (response.status === 200) {
+        setSuccess("All Messages Received Successfully");
+        setReceivedMessages(response.data.data);
+        setAlertSeverity('success');
+      } else {
+        setSuccess("Error Fetching Received Messages");
+        setAlertSeverity('error');
+      }
+    } catch (error) {
+      setSuccess("Error Fetching Received Messages");
+      setAlertSeverity('error');
+    }
+    setAlertOpen(true);
+  };
   return (
     <div>
          <Paper
@@ -36,7 +71,7 @@ const WhatsappRecivedmsg = () => {
               <pre className="full-pre pre-get">
                 <span className="typ typ-get">GET</span>{" "}
                 <span className="url">
-                  https://app.thewhatsappcity.com/api/get/whatsapp.received
+                http://localhost:4000/api/v1/qr-scans/user/recived
                 </span>
               </pre>
 
@@ -139,47 +174,62 @@ const WhatsappRecivedmsg = () => {
               <hr />
 
               <Stack spacing={2} sx={{ mt: 2 }}>
-                <Typography variant="h6">Send a Sample Request</Typography>
-                <TextField
-                  label="URL"
-                  value="https://app.thewhatsappcity.com/api/get/whatsapp.pending"
-                  InputProps={{ readOnly: true }}
-                  variant="outlined"
-                  fullWidth
-                  sx={{ bgcolor: "#fff", borderRadius: 1 }}
-                />
-                <TextField
-                  label="Secret"
-                  placeholder="Enter your API secret"
-                  variant="outlined"
-                  fullWidth
-                  sx={{ bgcolor: "#fff", borderRadius: 1 }}
-                />
-                <TextField
-                  label="limit"
-                  placeholder="limit"
-                  type="number"
-                  variant="outlined"
-                  fullWidth
-                  sx={{ bgcolor: "#fff", borderRadius: 1 }}
-                />
-                <TextField
-                  label="Page"
-                  placeholder="page"
-                  type="number"
-                  variant="outlined"
-                  fullWidth
-                  sx={{ bgcolor: "#fff", borderRadius: 1 }}
-                />
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<SendIcon />}
-                  sx={{ alignSelf: "flex-start", mt: 1 }}
-                >
-                  Send
-                </Button>
-              </Stack>
+            <TextField
+              label="Secret"
+              placeholder="Enter your API secret"
+              variant="outlined"
+              fullWidth
+              value={secretKey}
+              onChange={(e) => setsecretKey(e.target.value)}
+              sx={{ bgcolor: "#fff", borderRadius: 1 }}
+            />
+            <TextField
+              label="Limit"
+              placeholder="limit"
+              type="number"
+              variant="outlined"
+              value={limit}
+              onChange={(e) => setlimit(e.target.value)}
+              fullWidth
+              sx={{ bgcolor: "#fff", borderRadius: 1 }}
+            />
+            <TextField
+              label="Page"
+              placeholder="page"
+              type="number"
+              variant="outlined"
+              value={page}
+              onChange={(e) => setpage(e.target.value)}
+              fullWidth
+              sx={{ bgcolor: "#fff", borderRadius: 1 }}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<SendIcon />}
+              sx={{ alignSelf: "flex-start", mt: 1 }}
+              onClick={HadldeGetRecivedchat}
+            >
+              Send
+            </Button>
+          </Stack>
+
+          <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
+            Received Messages:
+          </Typography>
+          {receivedMessages.length > 0 ? (
+            <ul>
+              {receivedMessages.map((msg, index) => (
+                <li key={index}>
+                  <strong>Sender:</strong> {msg.sender} <br />
+                  <strong>Message:</strong> {msg.message} <br />
+                  <strong>Created:</strong> {new Date(msg.created * 1000).toLocaleString()}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Typography>No messages received yet.</Typography>
+          )}
 
               <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
                 Success Response Format

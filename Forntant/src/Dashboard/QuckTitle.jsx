@@ -14,7 +14,8 @@ import {
     InputAdornment,
     MenuItem,
     Modal,
-    Paper, Stack,
+    Paper,
+    Stack,
     TextField,
     Typography
 } from '@mui/material';
@@ -41,7 +42,14 @@ export default function QuickTitle() {
         const fetchQrScans = async () => {
             setLoading(true);
             try {
-                const response = await axios.get("http://localhost:4000/api/v1/qr-scans/user");
+                const token = Cookies.get('token');
+                const secretKey = await getUserSecretKey();
+                const response = await axios.get("http://localhost:4000/api/v1/qr-scans/user", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'X-Secret-Key': secretKey,
+                    },
+                });
                 if (response.data.success && Array.isArray(response.data.scans)) {
                     setUsers(response.data.scans);
                 } else {
@@ -85,8 +93,8 @@ export default function QuickTitle() {
                     // Upload file to Cloudinary and get the URL
                     fileUrl = await uploadFileToCloudinary(selectedFile);
                 }
-                const secretKey = await getUserSecretKey()
-                // Sending data with POST request
+
+                const secretKey = await getUserSecretKey();
                 const response = await axios.post('http://localhost:4000/api/v1/qr-scans/user/sendmessage', {
                     phoneNumber,
                     number,
@@ -94,12 +102,10 @@ export default function QuickTitle() {
                     fileType,
                     fileUrl, // Include uploaded file URL if exists
                     secretKey
-                  },config);
-          
-                console.log(response)
+                });
 
-                if (response.data.status === 'Message sent') {
-                    setMessage('');
+                if (response.data.status === 'Message sent' || response.data.status === 'File sent') {
+                    
                     setSelectedFile(null);
                     setFileType('');
                     setFilePreviewUrl(null);
@@ -126,11 +132,18 @@ export default function QuickTitle() {
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
-            setSelectedFile(file);
-            setFileType(file.type);
-            const url = URL.createObjectURL(file);
-            setFilePreviewUrl(url);
-            handleCloseModal();
+            // Check file type and size (optional)
+            const validTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/wav', 'application/pdf'];
+            if (validTypes.includes(file.type)) {
+                setSelectedFile(file);
+                setFileType(file.type);
+                const url = URL.createObjectURL(file);
+                setFilePreviewUrl(url);
+                handleCloseModal();
+                setStatus(''); // Clear any previous status
+            } else {
+                setStatus('Invalid file type. Please upload an image, audio, video, or PDF file.');
+            }
         }
     };
 
@@ -244,7 +257,7 @@ export default function QuickTitle() {
                                     style={{ maxWidth: '100%', marginBottom: '10px' }}
                                 />
                             )}
-                            {!fileType.startsWith('video/') && !fileType.startsWith('image/') && !fileType.startsWith('audio/') && (
+                            {fileType === 'application/pdf' && (
                                 <Typography>{selectedFile.name}</Typography>
                             )}
                         </Box>
@@ -273,40 +286,18 @@ export default function QuickTitle() {
                         </Alert>
                     )}
                 </Box>
-
-                {/* File Upload Modal */}
-                <Modal
-                    open={showModal}
-                    onClose={handleCloseModal}
-                    aria-labelledby="upload-file-modal-title"
-                    aria-describedby="upload-file-modal-description"
-                >
-                    <Box sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: 400,
-                        bgcolor: 'background.paper',
-                        border: '2px solid #000',
-                        boxShadow: 24,
-                        p: 4,
-                    }}>
-                        <Typography id="upload-file-modal-title" variant="h6" component="h2">
-                            Select a File to Upload
-                        </Typography>
+                <Modal open={showModal} onClose={handleCloseModal}>
+                    <Box sx={{ padding: 2, backgroundColor: 'white', width: 300, margin: '100px auto', borderRadius: '8px' }}>
+                        <Typography variant="h6" sx={{ mb: 2 }}>Upload File</Typography>
                         <input
-                            accept="video/*,image/*,audio/*,.pdf,.doc,.docx"
                             type="file"
+                            accept="image/*,video/*,audio/*,application/pdf"
                             onChange={handleFileChange}
-                            style={{ marginTop: 16 }}
                         />
                     </Box>
                 </Modal>
-
-                {/* Loading Spinner */}
-                <Backdrop open={loading} sx={{ zIndex: 9999 }}>
-                    <CircularProgress color="inherit" />
+                <Backdrop open={loading}>
+                    <CircularProgress />
                 </Backdrop>
             </Paper>
         </Stack>

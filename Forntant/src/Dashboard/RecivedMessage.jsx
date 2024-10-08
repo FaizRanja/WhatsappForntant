@@ -6,13 +6,21 @@ import {
   Box,
   Button,
   CircularProgress,
-  Dialog, DialogActions, DialogContent, DialogTitle,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   IconButton,
   Paper,
   Snackbar,
   Stack,
-  Table, TableBody,
-  TableCell, TableContainer, TableHead, TablePagination, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
   Typography,
 } from '@mui/material';
 import axios from 'axios';
@@ -42,26 +50,27 @@ export default function ShowSendData() {
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertSeverity, setAlertSeverity] = useState('success');
+  const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
     fetchMessages(searchParams);
-  }, [searchParams]);
+  }, [searchParams, page, rowsPerPage]);
 
   const fetchMessages = async (params = {}) => {
     setLoading(true);
     try {
       const token = Cookies.get('token');
-const secretKey =await getUserSecretKey()
-      // Pass the secretKey in headers or body based on backend expectation
+      const secretKey = await getUserSecretKey();
       const response = await axios.get('http://localhost:4000/api/v1/qr-scans/user/recived', {
-        params,
+        params: { ...params, page: page + 1, limit: rowsPerPage },
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-Secret-Key': secretKey // Adjust header name if necessary
+          'X-Secret-Key': secretKey,
         }
       });
       if (response.data && Array.isArray(response.data.scans)) {
         setShowMessage(response.data.scans);
+        setTotalCount(response.data.productsCount); // Update total count for pagination
       } else {
         setShowMessage([]);
       }
@@ -75,11 +84,10 @@ const secretKey =await getUserSecretKey()
       setLoading(false);
     }
   };
-  
 
   const handleSearch = (params) => {
     setSearchParams(params);
-    setPage(0); // Reset page to 0 when new search parameters are applied
+    setPage(0);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -88,13 +96,16 @@ const secretKey =await getUserSecretKey()
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(+event.target.value);
-    setPage(0);
+    setPage(0); // Reset page to 0 when changing rows per page
   };
 
   const handleConfirmDelete = async () => {
     try {
+      const secretKey = await getUserSecretKey();
       if (!scanToDelete) return;
-      const response = await axios.delete(`http://localhost:4000/api/v1/qr-scans/user/delete/recivedmessage/${scanToDelete}`);
+      const response = await axios.delete(`http://localhost:4000/api/v1/qr-scans/user/delete/recivedmessage/${scanToDelete}`, {
+        params: { secretKey },
+      });
       if (response.status === 200) {
         setShowMessage((prev) => prev.filter((msg) => msg._id !== scanToDelete));
         setAlertSeverity('success');
@@ -168,7 +179,6 @@ const secretKey =await getUserSecretKey()
           <SearchSms onSearch={handleSearch} />
         </Stack>
         <hr />
-
         <TableContainer sx={{ maxHeight: 440 }}>
           <Table stickyHeader aria-label="sticky table">
             <TableHead>
@@ -182,51 +192,49 @@ const secretKey =await getUserSecretKey()
             </TableHead>
             <TableBody>
               {showMessage.length > 0 ? (
-                showMessage
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((row) => (
-                    <TableRow hover role="checkbox" tabIndex={-1} key={row._id}>
-                      {columns.map((column) => {
-                        const value = column.id === 'timestamp' ? new Date(row[column.id]).toLocaleString() : row[column.id];
-                        return (
-                          <TableCell key={column.id} align={column.align}>
-                            {column.id === 'options' ? (
-                              <Box display="flex" justifyContent="center">
-                                <IconButton
-                                  aria-label="download"
-                                  onClick={downloadData}
-                                  style={{
-                                    width: 36,
-                                    height: 36,
-                                    borderRadius: 4,
-                                    backgroundColor: '#05785d',
-                                    margin: 2,
-                                  }}
-                                >
-                                  <FileDownloadIcon />
-                                </IconButton>
-                                <IconButton
-                                  aria-label="delete"
-                                  style={{
-                                    width: 36,
-                                    height: 36,
-                                    borderRadius: 4,
-                                    backgroundColor: '#E63757',
-                                    margin: 2,
-                                  }}
-                                  onClick={() => openConfirmDialog(row._id)}
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
-                              </Box>
-                            ) : (
-                              value
-                            )}
-                          </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                  ))
+                showMessage.map((row) => (
+                  <TableRow hover role="checkbox" tabIndex={-1} key={row._id}>
+                    {columns.map((column) => {
+                      const value = column.id === 'timestamp' ? new Date(row[column.id]).toLocaleString() : row[column.id];
+                      return (
+                        <TableCell key={column.id} align={column.align}>
+                          {column.id === 'options' ? (
+                            <Box display="flex" justifyContent="center">
+                              <IconButton
+                                aria-label="download"
+                                onClick={downloadData}
+                                style={{
+                                  width: 36,
+                                  height: 36,
+                                  borderRadius: 4,
+                                  backgroundColor: '#05785d',
+                                  margin: 2,
+                                }}
+                              >
+                                <FileDownloadIcon />
+                              </IconButton>
+                              <IconButton
+                                aria-label="delete"
+                                style={{
+                                  width: 36,
+                                  height: 36,
+                                  borderRadius: 4,
+                                  backgroundColor: '#E63757',
+                                  margin: 2,
+                                }}
+                                onClick={() => openConfirmDialog(row._id)}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Box>
+                          ) : (
+                            value
+                          )}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))
               ) : (
                 <TableRow>
                   <TableCell colSpan={columns.length} align="center">
@@ -238,30 +246,31 @@ const secretKey =await getUserSecretKey()
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25, 100]}
+        
           component="div"
-          count={showMessage.length}
+          count={totalCount} // Total number of rows
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
-
-      {/* Confirm Dialog */}
       <Dialog open={confirmDialogOpen} onClose={closeConfirmDialog}>
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
           <Typography>Are you sure you want to delete this message?</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleConfirmDelete} color="primary">Yes</Button>
-          <Button onClick={closeConfirmDialog} color="secondary">No</Button>
+          <Button onClick={closeConfirmDialog}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error">Delete</Button>
         </DialogActions>
       </Dialog>
-
-      {/* Alert Snackbar */}
-      <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleAlertClose}>
+      <Snackbar
+        open={alertOpen}
+        autoHideDuration={6000}
+        onClose={handleAlertClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
         <Alert onClose={handleAlertClose} severity={alertSeverity} sx={{ width: '100%' }}>
           {alertMessage}
         </Alert>
