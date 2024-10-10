@@ -44,8 +44,6 @@ const createWhatsappSection = async (id) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (allSectionObject[id]) {
-        await allSectionObject[id].destroy();
-        delete allSectionObject[id];
       }
 
       const client = new Client({
@@ -72,7 +70,6 @@ const createWhatsappSection = async (id) => {
         qrTimeout = setTimeout(async () => {
           await client.destroy();
           delete allSectionObject[id];
-          await QRScan.findOneAndDelete({ whatsappId: id });
           resolve({ message: "QR code expired, session destroyed" });
         }, 15000);
 
@@ -83,7 +80,6 @@ const createWhatsappSection = async (id) => {
         clearTimeout(qrTimeout);
 
         const phoneNumber = client.info.wid._serialized.split("@")[0];
-
         await QRScan.findOneAndUpdate(
           { whatsappId: id },
           { status: "Connected", phoneNumber, qrCode: null },
@@ -96,7 +92,6 @@ const createWhatsappSection = async (id) => {
       });
 
       client.on("disconnected", async (reason) => {
-        delete allSectionObject[id];
         await QRScan.findOneAndUpdate(
           { whatsappId: id },
           { status: "Disconnected" },

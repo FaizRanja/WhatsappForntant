@@ -3,7 +3,7 @@ import { Typography, Paper, Button, Stack, TextField, Snackbar, Alert } from "@m
 import SendIcon from "@mui/icons-material/Send";
 import axios from "axios";
 
-const DeleteRecivedmsg = () => {
+const DeleteWhatsappAccount = () => {
   const [secretKey, setsecretKey] = useState("");
   const [id, setid] = useState("");
   const [success, setSuccess] = useState("");
@@ -13,14 +13,14 @@ const DeleteRecivedmsg = () => {
   const handleDeletemessage = async () => {
     try {
       const response = await axios.delete(
-        `http://localhost:4000/api/v1/qr-scans/user/delete/sentmessage/${id}`,
+        `http://localhost:4000/api/v1/qr-scans/${id}`,
         {
           params: { secretKey }, // Passing secretKey as query parameter
         }
       );
       if (response.status === 200) {
         setAlertSeverity('success');
-        setSuccess("Message deleted successfully");
+        setSuccess("Whatsapp Account  deleted successfully");
       } else {
         setAlertSeverity('error');
         setSuccess("Error deleting message");
@@ -77,16 +77,16 @@ const DeleteRecivedmsg = () => {
 
         <div id="api-whatsapp-Delete_Received_Chat">
           <Typography variant="h4" gutterBottom>
-            WhatsApp - Delete Send Message
+            WhatsApp - Delete Whatsapp Account
           </Typography>
           <Typography gutterBottom>
-            Delete  whatsapp  Send Message. Requires "
-            <strong>delete_Whatsapp_Send_Message</strong>" API permission.
+            Delete  whatsapp   Account. Requires "
+            <strong>delete_Whatsapp_Account</strong>" API permission.
           </Typography>
           <pre className="full-pre pre-get">
             <span className="typ typ-get">GET</span>{" "}
             <span className="url">
-            http://localhost:4000/api/v1/qr-scans/user/delete/sentmessage
+            http://localhost:4000/api/v1/qr-scans
             </span>
           </pre>
 
@@ -110,7 +110,7 @@ const DeleteRecivedmsg = () => {
               <tr>
                 <td>id</td>
                 <td>Number</td>
-                <td>Send Message Id</td>
+                <td>Delete Whatsapp Account Id</td>
               </tr>
             </tbody>
           </table>
@@ -151,7 +151,7 @@ const DeleteRecivedmsg = () => {
             <Typography variant="h6">Send a Sample Request</Typography>
             <TextField
               label="URL"
-              value="http://localhost:4000/api/v1/qr-scans/user/delete/sentmessage"
+              value="http://localhost:4000/api/v1/qr-scans/${whatsapp Account Id"
               InputProps={{ readOnly: true }}
               variant="outlined"
               fullWidth
@@ -228,4 +228,10 @@ const DeleteRecivedmsg = () => {
   );
 };
 
-export default DeleteRecivedmsg;
+
+
+
+
+
+
+export default DeleteWhatsappAccount

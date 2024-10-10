@@ -22,6 +22,7 @@ import Pendingwhatmsg from "./ApiDocumation/Pendingwhatmsg";
 import WhatsappBulkmess from "./ApiDocumation/WhatsappBulkmess";
 import WhatsappRecivedmsg from "./ApiDocumation/WhatsappRecivedmsg";
 import Whatsappsinglemeg from "./ApiDocumation/Whatsappsinglemeg";
+import DeleteWhatsappAccount from "./ApiDocumation/DeleteWhatsappAccount";
 
 
 const menuItems = [
@@ -40,7 +41,7 @@ const menuItems = [
     sectionId: "api-whatsapp_Relink_account",
   },
   {
-    title: "  Send Single Chat",
+    title: "  Send Whatsapp Message",
     method: "POST",
     description: "WhatsApp - Send Single Chat   ",
     url: "http://localhost:4000/api/v1/qr-scans/user/sendmessage",
@@ -54,79 +55,88 @@ const menuItems = [
   //   sectionId: "api-whatsapp_delete_sent__Chat",
   // },
   {
-    title: "Delete Received Chat",
-    method: "GET",
-    description: "Whatsapp - Delete Received Message",
-    url: "http://localhost:4000/api/v1/qr-scans/user/delete/recivedmessage",
-    sectionId: "api-whatsapp-Delete_Received_Chat",
-  },
-
-  {
-    title: "Pending Chat",
-    method: "GET",
-    description: "WhatsApp- Get Pending Chat",
-    url: "https://app.thewhatsappcity.com/api/delete/whatsapp.sentmessage",
-    sectionId: "api-whatsapp_Sent_Pending_Message",
-  },
-  {
-    title: " Received Chat",
-    method: "GET",
-    description: "WhatsApp- Get Received Chat",
-    url: "https://app.thewhatsappcity.com/api/delete/whatsapp.sentmessage",
-    sectionId: "api-whatsapp_get_Received_Message",
-  },
-  {
-    title: " Sent Chat",
+    title: " Sent Whatsapp Chat",
     method: "GET",
     description: "WhatsApp- Get Received Chat",
     url: "https://app.thewhatsappcity.com/api/delete/whatsapp.sentmessage",
     sectionId: "api-whatsapp_get_Sent_Message",
   },
   {
-    title: " Send Bulk Chats",
-    method: "PSOT",
-    description: "WhatsApp - Send Bulk Chats   ",
-    url: "https://app.thewhatsappcity.com/api/send/whatsapp.bulk",
-    sectionId: "api-whatsapp_get_bulk_Message",
-  },
- 
-  {
-    title: "  Delete Received Chat",
-    method: "GEt",
-    description: "whatsapp  - Send Single Message    ",
+    title: " Received whatsapp Chat",
+    method: "GET",
+    description: "WhatsApp- Get Received Chat",
     url: "https://app.thewhatsappcity.com/api/delete/whatsapp.sentmessage",
-    sectionId: "api-whatsapp_delete_received__Chat",
+    sectionId: "api-whatsapp_get_Received_Message",
   },
   {
-    title: "  Delete Sent Chat",
-    method: "GEt",
-    description: "WhatsApp - Delete Sent Chat  ",
-    url: "https://app.thewhatsappcity.com/api/delete/whatsapp.sentmessage",
-    sectionId: "api-whatsapp_delete_sent__Chat",
-  },
-
-  {
-    title: "  Delete WhatsApp Account",
-    method: "GEt  ",
+    title: "  Delete whatsapp Sent Chat",
+    method: "GET",
     description: "WhatsApp - Delete Sent Chat  ",
     url: "https://app.thewhatsappcity.com/api/delete/whatsapp.sentmessage",
     sectionId: "api-whatsapp_delete_sent__Chat",
   },
   {
-    title: " Get Accounts",
-    method: "GEt  ",
+    title: "Delete whatsapp Received Chat",
+    method: "GET",
+    description: "Whatsapp - Delete Received Message",
+    url: "http://localhost:4000/api/v1/qr-scans/user/delete/recivedmessage",
+    sectionId: "api-whatsapp-Delete_Received_Chat",
+  },
+  {
+    title: " Get Whatsapp Accounts",
+    method: "GET  ",
     description: "WhatsApp - Get Accounts ",
     url: "https://app.thewhatsappcity.com/api/delete/whatsapp.sentmessage",
     sectionId: "api-whatsapp_get_account__Chat",
   },
-
   {
-    title: "  Send Single Chat",
+    title: "  Delete WhatsApp Account",
     method: "GET ",
-    description: "WhatsApp - Send Single Chat ",
+    description: "WhatsApp - Delete Whatsapp  Account   ",
     url: "https://app.thewhatsappcity.com/api/delete/whatsapp.sentmessage",
-    sectionId: "api-whatsapp_single_message",
+    sectionId: "api-whatsapp_delete_Account__Chat",
   },
+
+  // {
+  //   title: "  Send Single Chat",
+  //   method: "GET ",
+  //   description: "WhatsApp - Send Single Chat ",
+  //   url: "https://app.thewhatsappcity.com/api/delete/whatsapp.sentmessage",
+  //   sectionId: "api-whatsapp_single_message",
+  // },
+
+
+
+  // {
+  //   title: "Pending Chat",
+  //   method: "GET",
+  //   description: "WhatsApp- Get Pending Chat",
+  //   url: "https://app.thewhatsappcity.com/api/delete/whatsapp.sentmessage",
+  //   sectionId: "api-whatsapp_Sent_Pending_Message",
+  // },
+
+
+  // {
+  //   title: " Send Bulk Chats",
+  //   method: "PSOT",
+  //   description: "WhatsApp - Send Bulk Chats   ",
+  //   url: "https://app.thewhatsappcity.com/api/send/whatsapp.bulk",
+  //   sectionId: "api-whatsapp_get_bulk_Message",
+  // },
+ 
+  // {
+  //   title: "  Delete Received Chat",
+  //   method: "GEt",
+  //   description: "whatsapp  - Send Single Message    ",
+  //   url: "https://app.thewhatsappcity.com/api/delete/whatsapp.sentmessage",
+  //   sectionId: "api-whatsapp_delete_received__Chat",
+  // },
+  
+
+  
+ 
+
+ 
   // Add more menu items as needed
 ];
 
@@ -175,10 +185,10 @@ function Api() {
 
       // Case for Single message
 
-      case "api-whatsapp_get_bulk_Message":
-        return (
-        <WhatsappBulkmess/>
-        );
+      // case "api-whatsapp_get_bulk_Message":
+      //   return (
+      //     <WhatsappBulkmess/>
+      //   );
 
       // delete Recived Chats
 
@@ -198,6 +208,7 @@ function Api() {
 
       // Case for get whatsapp account
 
+
       case "api-whatsapp_get_account__Chat":
         return (
          <GetWhatsappChat/>
@@ -214,6 +225,11 @@ function Api() {
         return (
          <RelinkWhatsapp/>
         );
+
+        case "api-whatsapp_delete_Account__Chat":
+          return (
+          <DeleteWhatsappAccount/>
+          );
 
       default:
         return <Typography>Select an API from the sidebar.</Typography>;

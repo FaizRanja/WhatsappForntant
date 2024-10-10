@@ -21,7 +21,6 @@ const sendToken = (user, statusCode, res, secretKey) => {
       user,
       token ,// Optionally send the token in the response body (for client-side storage, if needed),
       secretKey
-
     });
 };
 

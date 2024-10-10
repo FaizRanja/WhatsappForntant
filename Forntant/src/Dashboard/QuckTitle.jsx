@@ -83,46 +83,86 @@ export default function QuickTitle() {
         }
     };
 
-    const handleSend = async () => {
+    const handleSendMessage = async () => {
         try {
             if (message.trim() && phoneNumber.trim() && number) {
-                setStatus('Sending...');
-
-                let fileUrl = '';
-                if (selectedFile) {
-                    // Upload file to Cloudinary and get the URL
-                    fileUrl = await uploadFileToCloudinary(selectedFile);
-                }
+                setStatus('Sending message...');
 
                 const secretKey = await getUserSecretKey();
                 const response = await axios.post('http://localhost:4000/api/v1/qr-scans/user/sendmessage', {
                     phoneNumber,
                     number,
                     message,
-                    fileType,
-                    fileUrl, // Include uploaded file URL if exists
                     secretKey
                 });
 
-                if (response.data.status === 'Message sent' || response.data.status === 'File sent') {
-                    
-                    setSelectedFile(null);
-                    setFileType('');
-                    setFilePreviewUrl(null);
+                if (response.data.status === 'Message sent') {
                     setStatus('Message sent successfully');
-                    return true; // Return true to indicate success
+                    return true;
                 } else {
                     setStatus('Failed to send message');
                     return false;
                 }
             } else {
                 setStatus('Please fill in all fields');
-                return false; // Return false if the form is not filled out
+                return false;
             }
         } catch (error) {
             setStatus('Failed to send message');
             console.error('Error sending message:', error);
             return false;
+        }
+    };
+
+    const handleSendAttachment = async (fileUrl) => {
+        try {
+            setStatus('Sending attachment...');
+            const secretKey = await getUserSecretKey();
+            const response = await axios.post('http://localhost:4000/api/v1/qr-scans/user/sendmessage', {
+                phoneNumber,
+                number,
+                fileType,
+                fileUrl,
+                secretKey
+            });
+
+            if (response.data.status === 'File sent') {
+                setStatus('Attachment sent successfully');
+                return true;
+            } else {
+                setStatus('Failed to send attachment');
+                return false;
+            }
+        } catch (error) {
+            setStatus('Failed to send attachment');
+            console.error('Error sending attachment:', error);
+            return false;
+        }
+    };
+
+    const handleSendClick = async () => {
+        setLoading(true);
+        try {
+            // First, send the message
+            const isMessageSent = await handleSendMessage();
+
+            if (isMessageSent) {
+                // If a file is selected, send the attachment
+                if (selectedFile) {
+                    const fileUrl = await uploadFileToCloudinary(selectedFile);
+                    await handleSendAttachment(fileUrl);
+                }
+                navigate("/user/sendmessage"); // Navigate to SendMessage page after successful send
+                setSelectedFile(null);
+                setFileType('');
+                setFilePreviewUrl(null);
+                setStatus('');
+            }
+        } catch (error) {
+            console.error('Error sending message and/or attachment:', error);
+            setStatus('Failed to send message and/or attachment');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -132,7 +172,6 @@ export default function QuickTitle() {
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
-            // Check file type and size (optional)
             const validTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/wav', 'application/pdf'];
             if (validTypes.includes(file.type)) {
                 setSelectedFile(file);
@@ -144,22 +183,6 @@ export default function QuickTitle() {
             } else {
                 setStatus('Invalid file type. Please upload an image, audio, video, or PDF file.');
             }
-        }
-    };
-
-    const handleSendClick = async () => {
-        setLoading(true);
-        try {
-            const isSuccess = await handleSend();
-            if (isSuccess) {
-                navigate("/user/sendmessage"); // Navigate to the SendMessage page
-                setStatus(''); // Clear status after successful send
-            }
-        } catch (error) {
-            console.error('Error sending message:', error);
-            setStatus('Failed to send message');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -262,44 +285,46 @@ export default function QuickTitle() {
                             )}
                         </Box>
                     )}
-                    <Stack direction="row" spacing={2} sx={{ mt: 2, justifyContent: 'center' }}>
+                    <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+                        <Button variant="contained" onClick={handleOpenModal} startIcon={<AddIcon />}>
+                            Attachment
+                        </Button>
                         <Button
-                            variant="contained"
-                            color="primary"
                             onClick={handleSendClick}
-                            startIcon={<SendIcon />}
+                            variant="contained"
+                            endIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
+                            disabled={loading}
                         >
                             Send
                         </Button>
-                        <Button
-                            variant="contained"
-                            color="secondary"
-                            onClick={handleOpenModal}
-                            startIcon={<AddIcon />}
-                        >
-                            Add File
-                        </Button>
                     </Stack>
                     {status && (
-                        <Alert sx={{ mt: 2 }} severity={status.includes('Failed') ? 'error' : 'success'}>
-                            {status}
-                        </Alert>
+                        <Box sx={{ marginTop: 2 }}>
+                            <Alert severity="info">{status}</Alert>
+                        </Box>
                     )}
                 </Box>
-                <Modal open={showModal} onClose={handleCloseModal}>
-                    <Box sx={{ padding: 2, backgroundColor: 'white', width: 300, margin: '100px auto', borderRadius: '8px' }}>
-                        <Typography variant="h6" sx={{ mb: 2 }}>Upload File</Typography>
-                        <input
-                            type="file"
-                            accept="image/*,video/*,audio/*,application/pdf"
-                            onChange={handleFileChange}
-                        />
-                    </Box>
-                </Modal>
-                <Backdrop open={loading}>
-                    <CircularProgress />
-                </Backdrop>
             </Paper>
+            <Modal open={showModal} onClose={handleCloseModal}>
+                <Backdrop open={true} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+                    <Box sx={{
+                        width: 400,
+                        maxWidth: '90%',
+                        bgcolor: 'background.paper',
+                        borderRadius: 1,
+                        p: 2,
+                        textAlign: 'center'
+                    }}>
+                        <Typography variant="h6" component="h2">
+                            Upload Attachment
+                        </Typography>
+                        <Button variant="contained" component="label">
+                            Choose File
+                            <input type="file" hidden onChange={handleFileChange} />
+                        </Button>
+                    </Box>
+                </Backdrop>
+            </Modal>
         </Stack>
     );
-}
+}   

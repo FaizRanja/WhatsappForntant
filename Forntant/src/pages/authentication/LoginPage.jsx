@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthWrapper } from "./AuthWrapper";
 import './page-auth.css';
 import React  from "react";
+import Cookies from "js-cookie"
 
 export const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -20,12 +21,12 @@ export const LoginPage = () => {
       const response = await axios.post("http://localhost:4000/api/v1/user/login", {
         email,
         password
-      },{withCredentials:true} );
+      } );
 
-      console.log(response);
+   
 
-      // const { token } = response.data; // Extract the token from the response
-      // Cookies.set('token', token, { expires: 7 }); // Set the token in cookies (expires in 7 days)
+      const { token } = response.data; // Extract the token from the response
+      Cookies.set('token', token, { expires: 7 }); // Set the token in cookies (expires in 7 days)
 
       setSuccess("User login successful!");
       setError(null);

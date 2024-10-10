@@ -12,7 +12,6 @@ import {
   CircularProgress,
 } from "@mui/material";
 import QRCode from "react-qr-code";
-import io from "socket.io-client";
 import TablesPage from "../TablesPage";
 import axios from 'axios';
 
@@ -21,9 +20,6 @@ const Drowerforlink = ({ WhatsApp, onClose }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [qrcodeDialogOpen, setQrcodeDialogOpen] = useState(false);
   const [timer, setTimer] = useState(15);
-  const [section, setSection] = useState("");
-  const [id, setId] = useState("");
-  const [socket, setSocket] = useState(null);
   const [loading, setLoading] = useState(false);
   const [intervalId, setIntervalId] = useState(null);
   const [redirectToTables, setRedirectToTables] = useState(false);
@@ -52,69 +48,11 @@ const Drowerforlink = ({ WhatsApp, onClose }) => {
     });
   }, []);
 
-  useEffect(() => {
-    const socketInstance = io.connect("http://localhost:4000");
-    setSocket(socketInstance);
-    setLoading(true);
-    setBackdropOpen(true); // Show backdrop when connecting
-
-    socketInstance.on("qr", (data) => {
-      const { qr } = data;
-      setQrCode(qr);
-      setTimer(15);
-      setLoading(false);
-      setBackdropOpen(false); // Close backdrop when QR code is ready
-
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-
-      const newIntervalId = setInterval(() => {
-        setTimer((prevTimer) => {
-          if (prevTimer <= 1) {
-            setTimer(15); // Reset timer
-            socketInstance.emit("requestNewQr", { id: section }); // Request new QR code
-            return 15;
-          }
-          return prevTimer - 1;
-        });
-      }, 1000);
-
-      setIntervalId(newIntervalId);
-    });
-
-    socketInstance.on("ready", (data) => {
-      setId(data.id);
-      setQrCode("");
-      setTimer(15);
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-      setLoading(false);
-      setBackdropOpen(false); // Close backdrop on successful connection
-
-      swal("Hello, I am Faiz", `ID: ${data.id}`, "success").then(() => {
-        setRedirectToTables(true); // Set state to redirect to TablesPage
-      });
-
-      setQrcodeDialogOpen(false);
-    });
-
-    socketInstance.on("error", (data) => {
-      console.error(data.message);
-      setBackdropOpen(false); // Ensure backdrop closes on error
-    });
-
-    return () => {
-      socketInstance.disconnect();
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [intervalId]);
+ 
 
   const handleAddAccount = async () => {
     try {
+      
       setLoading(true); // Start loading when making the request
       setBackdropOpen(true); // Open the backdrop to blur the screen and show loader
       const response = await axios.post("http://localhost:4000/api/v1/qr-generate", {

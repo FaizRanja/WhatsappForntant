@@ -37,8 +37,11 @@ const TablesPage = ({ sectionId }) => {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [searchParams, setSearchParams] = useState({});
   const [refresh, setRefresh] = useState("");
+  const [page, setPage] = useState(0); // State for current page
+  const [rowsPerPage, setRowsPerPage] = useState(10); // State for rows per page
+  const [totalCount, setTotalCount] = useState(0); // State f
 
-  http://localhost:4000/api/v1/qr-scans/user
+
 
   useEffect(() => {
     const fetchQrScans = async (params = {}) => {
@@ -46,7 +49,7 @@ const TablesPage = ({ sectionId }) => {
    const secretKey =await getUserSecretKey()
       try {
         const response = await axios.get('http://localhost:4000/api/v1/qr-scans/user', {
-          params,
+          params: { ...params, page: page + 1, limit: rowsPerPage },
           headers: {
             'Authorization': `Bearer ${token}`,
             'X-Secret-Key': secretKey
@@ -55,6 +58,7 @@ const TablesPage = ({ sectionId }) => {
 
         if (response.data.success && Array.isArray(response.data.scans)) {
           setQrScans(response.data.scans);
+          setTotalCount(response.data.totalCount); // Update totalCount with the total number of scans
         } else {
           setQrScans([]);
         }
@@ -72,7 +76,7 @@ const TablesPage = ({ sectionId }) => {
     return () => {
       clearInterval(intervalId);
     };
-  }, [searchParams]); // Add searchParams as a dependency
+  }, [searchParams, page, rowsPerPage]); // Add searchParams as a dependency
 
   const toggleDialog = () => {
     setDialogOpen(!dialogOpen);
@@ -86,6 +90,16 @@ const TablesPage = ({ sectionId }) => {
   const closeConfirmDialog = () => {
     setScanToDelete(null);
     setConfirmDialogOpen(false);
+  };
+
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage); // Update the page number
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0); // Reset to first page on rows per page change
   };
 
   // Handle For Delete Qr Scan Whatsapp 
@@ -142,7 +156,6 @@ const TablesPage = ({ sectionId }) => {
     try {
       // Corrected API endpoint
       const response = await axios.post("http://localhost:4000/api/v1/qr-scans/user/generatecode/relink", { whatsappId: id });
-      
       // Log the response for debugging
       console.log(response);
       if (response.data.success) {
@@ -150,7 +163,7 @@ const TablesPage = ({ sectionId }) => {
         setLinkDroweOpen(true);
       } else {
         console.error("Failed to relink WhatsApp account:", response.data.message);
-        setSnackbarMessage("Failed to relink WhatsApp account.");
+        setSnackbarMessage("Session already exists for this WhatsApp ID.");
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
       }
@@ -232,12 +245,17 @@ const TablesPage = ({ sectionId }) => {
         </Backdrop>
       ) : (
         <Stack mt={"2rem"}>
-          <QrscanData
+            <QrscanData
             qrScans={qrScans}
             onLinkClick={handleLinkClick}
             onCopy={handleAddCopyUniqueid}
             onDelete={openConfirmDialog}
             sectionId={sectionId}
+            page={page} // Pass page to QrscanData
+            rowsPerPage={rowsPerPage} // Pass rowsPerPage to QrscanData
+            totalCount={totalCount} // Pass totalCount to QrscanData
+            onChangePage={handleChangePage} // Pass onChangePage handler
+            onChangeRowsPerPage={handleChangeRowsPerPage} // Pass onChangeRowsPerPage handler
           />
         </Stack>
       )}
