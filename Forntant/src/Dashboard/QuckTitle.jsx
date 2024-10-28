@@ -157,6 +157,7 @@ export default function QuickTitle() {
                 setFileType('');
                 setFilePreviewUrl(null);
                 setStatus('');
+                setMessage('')
             }
         } catch (error) {
             console.error('Error sending message and/or attachment:', error);

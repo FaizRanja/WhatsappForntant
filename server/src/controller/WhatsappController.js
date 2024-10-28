@@ -62,16 +62,12 @@ const createWhatsappSection = async (id) => {
       let qrTimeout;
 
       client.on("qr", async (qr) => {
-        const existingSession = await QRScan.findOne({ whatsappId: id });
-        if (existingSession && existingSession.status === "Connected") {
-          return resolve({ message: "Session is already connected" });
-        }
-
+    
         qrTimeout = setTimeout(async () => {
           await client.destroy();
           delete allSectionObject[id];
           resolve({ message: "QR code expired, session destroyed" });
-        }, 15000);
+        }, 20000);
 
         resolve({ message: "QR Code generated", qrCode: qr });
       });
@@ -99,13 +95,8 @@ const createWhatsappSection = async (id) => {
         );
         resolve({ message: "Client disconnected", reason });
       });
-      client.on('message', async (msg) => {
-        if (msg.body === '!send-media') {
-          const media = await MessageMedia.fromUrl('https://via.placeholder.com/350x150.png');
-          await client.sendMessage(msg.from, media);
-        }
-      });
-
+  
+  
       client.initialize();
 
       // Media send example with command
@@ -213,7 +204,6 @@ console.log(data);
     throw new Error("Invalid input data");
   } catch (error) {
     // Update the message status to failed in case of an error
-    await Message.findByIdAndUpdate(newMessage._id, { status: "failed" });
     return res.status(500).json({ status: "Failed", error: error.message });
   }
 };
